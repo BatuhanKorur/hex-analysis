@@ -1,0 +1,16 @@
+{
+  "name": "@hex-analysis/backend",
+  "version": "1.0.0",
+  "description": "Backend for Hex Analysis application",
+  "type": "module",
+  "packageManager": "pnpm@10.4.1",
+  "scripts": {
+    "dev": "bun run --watch src/main.ts"
+  },
+  "dependencies": {
+    "hono": "^4.7.4"
+  },
+  "devDependencies": {
+    "@hex-analysis/types": "workspace:*"
+  }
+}

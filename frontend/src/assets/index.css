@@ -1,0 +1,33 @@
+@import "tailwindcss";
+
+@layer base {
+  html {
+    font-family: 'Geist', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+
+    -webkit-text-size-adjust: 100%;
+    font-variation-settings: "wght" 400;
+    font-feature-settings: "kern", "liga", "clig", "calt";
+
+    background-color: var(--color-zinc-950);
+    color: var(--color-zinc-50);
+  }
+}
+
+@utility center {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+@utility align {
+  display: flex;
+  align-items: center;
+}
+
+@utility between {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}

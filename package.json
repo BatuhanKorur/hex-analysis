@@ -1,0 +1,35 @@
+{
+  "name": "hex-analysis",
+  "version": "1.0.0",
+  "description": "Simple file analysis application, built with Bun backend and React frontend",
+  "author": "Batuhan Korur <https://batuhan.io>",
+  "keywords": [
+    "bun",
+    "frontend",
+    "backend",
+    "file analysis",
+    "hex viewer",
+    "binary analysis"
+  ],
+  "license": "ISC",
+  "packageManager": "pnpm@10.4.1",
+  "scripts": {
+    "lint": "eslint.",
+    "lint:inspect": "pnpm dlx @eslint/config-inspector@latest"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.22.0",
+    "@stylistic/eslint-plugin": "^4.2.0",
+    "@types/bun": "^1.2.5",
+    "@types/node": "^22.13.10",
+    "@types/react": "^19.0.10",
+    "@types/react-dom": "^19.0.4",
+    "@typescript-eslint/parser": "^8.26.1",
+    "eslint": "^9.22.0",
+    "eslint-plugin-react": "^7.37.4",
+    "eslint-plugin-react-hooks": "^5.2.0",
+    "globals": "^16.0.0",
+    "typescript": "^5.8.2",
+    "typescript-eslint": "^8.26.1"
+  }
+}
