@@ -1,11 +1,14 @@
 import path from 'node:path'
 import process from 'node:process'
 import fs from 'node:fs'
-import crypto from 'node:crypto'
+import crypto, { createHash } from 'node:crypto'
 import { FileService } from './FileService'
-import { ImageService } from './ImageService'
+// import { ImageService } from './ImageService'
 import { WSContext } from 'hono/dist/types/helper/websocket'
-import { socketResponse } from '../utils/socket'
+import { sendMessage } from '@hex-analysis/shared/utils'
+import { HashListItem, HexLine } from '@hex-analysis/shared'
+import { $ } from 'bun'
+import { ImageService } from './ImageService'
 
 export class AnalysisService {
   temp_dir: string = path.join(process.cwd(), 'temp')
@@ -13,7 +16,7 @@ export class AnalysisService {
   file_path: string = ''
   ws: WSContext | null = null
 
-  constructor(ws: WSContext<WebSocket>) {
+  constructor(ws: WSContext<unknown>) {
     this.ws = ws
     if (!fs.existsSync(this.temp_dir)) {
       fs.mkdirSync(this.temp_dir, { recursive: true })
@@ -27,32 +30,37 @@ export class AnalysisService {
     const { buffer, headerBuffer } = await this.getFileBuffer()
     await this.saveFile(buffer)
 
-    const tasks = []
-    tasks.push(FileService.verifyFile(headerBuffer, this.file).then((verification) => {
-      this.ws!.send(socketResponse('file_verification', verification))
-    }))
+    const file_meta = FileService.verifyFile(headerBuffer, this.file)
+    this.ws!.send(sendMessage('file_verification', file_meta))
 
-    tasks.push(this.getHexDump().then((hex_dump) => {
-      this.ws!.send(socketResponse('hex_dump', hex_dump))
-    }))
+    const tasks = []
+    tasks.push(this.getHexDump()
+      .then((hex_dump) => {
+        this.ws!.send(sendMessage('hex_dump', hex_dump))
+      }))
+
+    tasks.push(this.getHexStrings()
+      .then((hex_strings) => {
+        this.ws!.send(sendMessage('hex_strings', hex_strings))
+      }))
+
+    tasks.push(this.getHashList()
+      .then((hash_list) => {
+        this.ws!.send(sendMessage('hash_list', hash_list))
+      }))
+
+    if (file_meta.isImage) {
+      const imageService = new ImageService(this.file_path)
+      tasks.push(imageService.getImageMetadata().then((metadata) => {
+        this.ws!.send(sendMessage('image_metadata', metadata))
+      }))
+
+      tasks.push(imageService.analyzeColors().then((colors) => {
+        this.ws!.send(sendMessage('image_colors', colors))
+      }))
+    }
 
     await Promise.all(tasks)
-
-    // console.log(hex_dump)
-
-    const strings = await this.getStrings()
-    // console.log(strings)
-
-    const hash_data = await this.getHashData(['md4', 'md5', 'sha1', 'sha256', 'sha384', 'sha512'])
-    // console.log(hash_data)
-
-    /*    if (verification.isImage) {
-      // TODO Some image related stuff bro
-      const imageService = new ImageService(this.file_path)
-      await imageService.getImageMetadata()
-      const i = await imageService.analyzeColors()
-      console.log(i)
-    } */
   }
 
   private async getHexDump() {
@@ -68,57 +76,44 @@ export class AnalysisService {
     const lines = output.trim().split('\n')
     return lines.map((line) => {
       const [address, hexPart, asciiPart] = line.split(/:\s+|\s{2,}/)
+      const hexArray = hexPart
+        .split(' ')
+        .map(byte => [byte.slice(0, 2), byte.slice(2, 4)])
+        .flat()
       return {
         address,
-        hex: hexPart.trim(),
-        ascii: asciiPart.trim(),
+        hex: hexArray,
+        ascii: asciiPart.split(''),
       }
     })
   }
 
-  private async getStrings() {
-    const process = Bun.spawn(['strings', this.file_path!], {
-      stdout: 'pipe',
-      stderr: 'pipe',
-    })
-    const output = await new Response(process.stdout).text()
-    const error = await new Response(process.stderr).text()
-    if (error) {
-      throw new Error(`strings command failed: ${error}`)
-    }
-    return output.trim().split('\n')
-  }
-
-  private async getHashData(algorithms: string[]) {
-    if (!this.file_path) return
-
-    // Create a hash object for each algorithm
-    const hashObjects: Record<string, crypto.Hash> = {}
-    for (const algo of algorithms) {
-      hashObjects[algo] = crypto.createHash(algo)
-    }
-    // Process the file in a single stream operation
+  private async getHexStrings() {
     try {
-      const stream = fs.createReadStream(this.file_path)
-
-      // Process each chunk of data
-      for await (const chunk of stream) {
-        // Update all hash objects with the current chunk
-        Object.values(hashObjects).forEach(hash => hash.update(chunk))
-      }
-
-      // Convert hash objects to hex digest results
-      const results: Record<string, string> = {}
-      for (const [algo, hash] of Object.entries(hashObjects)) {
-        results[algo] = hash.digest('hex')
-      }
-
-      return results
+      const process = await $`strings ${this.file_path!}`.text()
+      return process.trim().split('\n')
     }
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     catch (error) {
-      throw new Error(`Failed to compute file hashes`)
+      // @ts-ignore
+      console.error(`Failed with code ${error.exitCode}`)
+      // @ts-ignore
+      console.error(error.stdout.toString())
+      // @ts-ignore
+      console.error(error.stderr.toString())
     }
+  }
+
+  private async getHashList() {
+    const algorithms = ['md4', 'md5', 'sha1', 'sha256', 'sha384', 'sha512']
+    const list: HashListItem[] = []
+
+    algorithms.forEach((algo) => {
+      const hash = createHash(algo)
+      hash.update(this.file_path!)
+      list.push({ algorithm: algo, hash: hash.digest('hex') })
+    })
+
+    return list
   }
 
   private async getFileBuffer() {

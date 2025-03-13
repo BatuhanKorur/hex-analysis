@@ -35,7 +35,9 @@ export default function FileUpload({
   }
 
   const sendFile = () => {
+    console.log('Hello')
     if (file) {
+      console.log('Sending file:', file)
       const reader = new FileReader()
       reader.onload = () => {
         const base64 = reader.result?.toString().split(',')[1]

@@ -1,4 +1,4 @@
-import { FileSignature } from '@hex-analysis/types'
+import { FileSignature } from '@hex-analysis/shared/types'
 
 // Collection of common file signatures (magic numbers)
 export const FILE_SIGNATURES: FileSignature[] = [

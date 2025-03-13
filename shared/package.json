@@ -1,5 +1,5 @@
 {
-  "name": "@hex-analysis/types",
+  "name": "@hex-analysis/shared",
   "version": "1.0.0",
   "description": "Type definitions for Hex Analysis project",
   "type": "module",

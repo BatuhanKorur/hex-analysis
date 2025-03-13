@@ -1,7 +1,7 @@
 import { Hono } from 'hono'
 import { createBunWebSocket } from 'hono/bun'
 import { AnalysisService } from './lib/AnalysisService'
-import { socketData, socketResponse } from './utils/socket'
+import { sendMessage, parseMessage } from '@hex-analysis/shared'
 
 const { upgradeWebSocket, websocket } = createBunWebSocket()
 const app = new Hono()
@@ -36,7 +36,7 @@ app.get('/ws', upgradeWebSocket(() => {
       console.log('WebSocket connected')
     },
     onMessage(event, ws) {
-      const data = socketData(event)
+      const data = parseMessage(event)
       if (data.type === 'analyze_file') {
         const f = data.message as { file: string, filename: string, content_type: string }
         const binaryData = Buffer.from(f.file, 'base64')
@@ -46,7 +46,6 @@ app.get('/ws', upgradeWebSocket(() => {
 
         const analysis = new AnalysisService(ws)
         analysis.startAnalysis(file)
-        console.log(file)
       }
     },
   }

@@ -1,10 +1,11 @@
-import { FileSignature, VerifyFileResponse } from '@hex-analysis/types'
+import { FileSignature, FileVerificationResponse } from '../../../shared'
 import { FILE_SIGNATURES } from '../const/fileSignatures'
+import { VERIFICATION_STATUS } from '../../../shared/enum'
 
 export class FileService {
-  public static async verifyFile(headerBuffer: Buffer, file: File) {
-    const response: VerifyFileResponse = {
-      status: '',
+  public static verifyFile(headerBuffer: Buffer, file: File) {
+    const response: FileVerificationResponse = {
+      status: VERIFICATION_STATUS.UNKNOWN,
       message: '',
       signature: null,
       claimed_mime: '',
@@ -18,17 +19,16 @@ export class FileService {
     const signature: FileSignature | undefined = FILE_SIGNATURES.find(signature => this.matchSignatures(headerBuffer, signature))
 
     if (!signature) {
-      response.status = 'unknown'
       response.message = 'No matching signature found'
       return response
     }
 
     if (claimed_mime === signature.mimeType) {
-      response.status = 'match'
+      response.status = VERIFICATION_STATUS.MATCH
       response.message = `Claimed ${claimed_mime} matches verified type, ${signature.mimeType}`
     }
     else {
-      response.status = 'mismatch'
+      response.status = VERIFICATION_STATUS.MISMATCH
       response.message = `Claimed ${claimed_mime} does not match verified type, ${signature.mimeType}`
     }
 

@@ -11,6 +11,6 @@
     "hono": "^4.7.4"
   },
   "devDependencies": {
-    "@hex-analysis/types": "workspace:*"
+    "@hex-analysis/shared": "workspace:*"
   }
 }
