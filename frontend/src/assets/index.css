@@ -7,12 +7,17 @@
     -moz-osx-font-smoothing: grayscale;
 
     -webkit-text-size-adjust: 100%;
-    font-variation-settings: "wght" 400;
     font-feature-settings: "kern", "liga", "clig", "calt";
 
     background-color: var(--color-zinc-950);
     color: var(--color-zinc-50);
   }
+}
+
+iconify-icon {
+  display: inline-block;
+  width: 1em;
+  height: 1em;
 }
 
 @utility center {

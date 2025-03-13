@@ -4,29 +4,40 @@ import fs from 'node:fs'
 import crypto from 'node:crypto'
 import { FileService } from './FileService'
 import { ImageService } from './ImageService'
+import { WSContext } from 'hono/dist/types/helper/websocket'
+import { socketResponse } from '../utils/socket'
 
 export class AnalysisService {
   temp_dir: string = path.join(process.cwd(), 'temp')
   file: File | undefined = undefined
   file_path: string = ''
+  ws: WSContext | null = null
 
-  constructor() {
+  constructor(ws: WSContext<WebSocket>) {
+    this.ws = ws
     if (!fs.existsSync(this.temp_dir)) {
       fs.mkdirSync(this.temp_dir, { recursive: true })
     }
   }
 
-  public async start(file: File) {
-    if (!file) return
+  public async startAnalysis(file: File) {
+    if (!file || !this.ws) return
     this.file = file
 
     const { buffer, headerBuffer } = await this.getFileBuffer()
     await this.saveFile(buffer)
 
-    const verification = await FileService.verifyFile(headerBuffer, this.file)
-    // console.log(verification)
+    const tasks = []
+    tasks.push(FileService.verifyFile(headerBuffer, this.file).then((verification) => {
+      this.ws!.send(socketResponse('file_verification', verification))
+    }))
 
-    const hex_dump = await this.getHexDump()
+    tasks.push(this.getHexDump().then((hex_dump) => {
+      this.ws!.send(socketResponse('hex_dump', hex_dump))
+    }))
+
+    await Promise.all(tasks)
+
     // console.log(hex_dump)
 
     const strings = await this.getStrings()
@@ -35,13 +46,13 @@ export class AnalysisService {
     const hash_data = await this.getHashData(['md4', 'md5', 'sha1', 'sha256', 'sha384', 'sha512'])
     // console.log(hash_data)
 
-    if (verification.isImage) {
+    /*    if (verification.isImage) {
       // TODO Some image related stuff bro
       const imageService = new ImageService(this.file_path)
       await imageService.getImageMetadata()
       const i = await imageService.analyzeColors()
       console.log(i)
-    }
+    } */
   }
 
   private async getHexDump() {

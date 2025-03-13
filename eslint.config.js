@@ -25,6 +25,11 @@ export default [
     },
   },
   {
+    rules: {
+      '@stylistic/jsx-one-expression-per-line': 'off',
+    },
+  },
+  {
     files: ['**/frontend/**/*.{js,jsx,ts,tsx}'],
     plugins: {
       'react': pluginReact,
@@ -33,6 +38,7 @@ export default [
     rules: {
       ...pluginReact.configs.flat.recommended.rules,
       ...pluginReactHooks.configs['recommended-latest'].rules,
+      'react/react-in-jsx-scope': 'off',
     },
   },
 ]

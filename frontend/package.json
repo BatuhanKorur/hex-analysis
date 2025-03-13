@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.0.13",
+    "cva": "^1.0.0-beta.3",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "tailwind-merge": "^3.0.2",
@@ -18,6 +19,7 @@
   },
   "devDependencies": {
     "@hex-analysis/types": "workspace:*",
+    "@iconify-icon/react": "^2.3.0",
     "@vitejs/plugin-react": "^4.3.4",
     "typescript": "^5.8.2",
     "vite": "^6.2.1"

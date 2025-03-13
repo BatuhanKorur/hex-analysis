@@ -1,12 +1,16 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './assets/index.css'
+import App from './App'
+import { SocketContext } from './context/SocketContext'
 
 createRoot(document.getElementById('root')!)
   .render(
     <StrictMode>
-      <div>
-        <p>Hello World</p>
-      </div>
+      <SocketContext>
+        <div className="p-6 max-w-7xl mx-auto">
+          <App />
+        </div>
+      </SocketContext>
     </StrictMode>,
   )
