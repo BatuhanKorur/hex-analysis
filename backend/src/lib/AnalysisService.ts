@@ -60,7 +60,9 @@ export class AnalysisService {
       }))
     }
 
-    await Promise.all(tasks)
+    await Promise.all(tasks).finally(() => {
+      this.removeFile()
+    })
   }
 
   private async getHexDump() {

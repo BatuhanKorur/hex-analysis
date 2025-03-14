@@ -3,3 +3,10 @@ export enum VERIFICATION_STATUS {
   MISMATCH = 'mismatch',
   UNKNOWN = 'unknown',
 }
+
+export enum SOCKET_STATUS {
+  CONNECTING = 'Connecting',
+  CONNECTED = 'Connected',
+  DISCONNECTED = 'Disconnected',
+  ERROR = 'Error',
+}

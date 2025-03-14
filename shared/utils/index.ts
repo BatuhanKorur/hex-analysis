@@ -1,5 +1,6 @@
 import { WSMessage } from '../types'
 
+export * from './prettyBytes'
 export function sendMessage(type: string, message: unknown) {
   return JSON.stringify({ type, message })
 }

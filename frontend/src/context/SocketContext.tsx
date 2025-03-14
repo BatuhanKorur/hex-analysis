@@ -1,16 +1,17 @@
 import { createContext, FC, ReactNode, useContext, useEffect, useState } from 'react'
+import { SOCKET_STATUS } from '@hex-analysis/shared/enum'
 
 interface SocketContextType {
   socket: WebSocket | null
   isConnected: boolean
-  status: string
+  status: SOCKET_STATUS
   send: (type: string, message: unknown) => void
   messages: Map<string, unknown>
 }
 
 const WebSocketContext = createContext<SocketContextType>({
   socket: null,
-  status: '',
+  status: SOCKET_STATUS.DISCONNECTED,
   isConnected: false,
   send: () => {},
   messages: new Map<string, unknown>(),
@@ -20,7 +21,7 @@ export const useSocket = () => useContext(WebSocketContext)
 
 export const SocketContext: FC<{ children: ReactNode }> = ({ children }) => {
   const [socket, setSocket] = useState<WebSocket | null>(null)
-  const [status, setStatus] = useState('')
+  const [status, setStatus] = useState<SOCKET_STATUS>(SOCKET_STATUS.DISCONNECTED)
   const [isConnected, setIsConnected] = useState(false)
   const [messages, setMessages] = useState<Map<string, unknown>>(new Map())
 
@@ -36,22 +37,22 @@ export const SocketContext: FC<{ children: ReactNode }> = ({ children }) => {
         socket.close()
       }
 
-      setStatus('Connecting...')
+      setStatus(SOCKET_STATUS.CONNECTING)
       const ws = new WebSocket('ws://localhost:3000/ws')
 
       ws.onopen = () => {
         setIsConnected(true)
-        setStatus('Connected')
+        setStatus(SOCKET_STATUS.CONNECTED)
       }
 
       ws.onclose = () => {
         setIsConnected(false)
-        setStatus('Disconnected')
+        setStatus(SOCKET_STATUS.DISCONNECTED)
       }
 
       ws.onerror = () => {
         setIsConnected(false)
-        setStatus(`Error`)
+        setStatus(SOCKET_STATUS.DISCONNECTED)
       }
 
       ws.onmessage = (event) => {
@@ -81,7 +82,7 @@ export const SocketContext: FC<{ children: ReactNode }> = ({ children }) => {
         socket.close()
         setSocket(null)
         setIsConnected(false)
-        setStatus('Disconnected')
+        setStatus(SOCKET_STATUS.DISCONNECTED)
       }
     }
   }, [])

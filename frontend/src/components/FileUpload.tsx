@@ -2,42 +2,81 @@ import { cx } from '@/utils'
 import React, { useState } from 'react'
 import { Icon } from '@iconify-icon/react'
 import { useSocket } from '../context/SocketContext'
+import { prettyBytes } from '@hex-analysis/shared'
 
-function FileInfo({ file }: { file: File }) {
+interface FileUploadProps {
+  className?: string
+}
+
+export default function FileUpload({ className }: FileUploadProps) {
+  const [file, setFile] = useState<File | null>(null)
+  const [isDragging, setIsDragging] = useState(false)
+
+  const handleDrop = (event: React.DragEvent<HTMLDivElement>) => {
+    event.preventDefault()
+    const droppedFile = event.dataTransfer.files[0]
+    if (droppedFile) {
+      setFile(droppedFile)
+    }
+  }
+
+  const handleDragOver = (event: React.DragEvent) => {
+    event.preventDefault()
+    setIsDragging(true)
+  }
+
+  const handleDragLeave = (event: React.DragEvent) => {
+    event.preventDefault()
+    setIsDragging(false)
+  }
+
+  const handleFileInput = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const selectedFile = event.target.files?.[0]
+    if (selectedFile) {
+      setFile(selectedFile)
+    }
+  }
+
+  const handleRemoveFile = () => {
+    setFile(null)
+  }
+
   return (
-    <div className="flex h-18">
-      <div className="h-full w-18 center">
-        <Icon icon="tabler:file" className="scale-[1.6]" />
-      </div>
-      <div className="min-w-64 flex flex-col justify-center">
-        <p className="text-lg font-medium">{file.name }</p>
-        <div className="between text-zinc-200">
-          <span>{ file.type }</span>
-          <span>{ file.size }</span>
-        </div>
+    <div className={cx(className)}>
+      <div
+        className={cx([
+          'flex items-center relative',
+          'border border-dashed border-zinc-700 h-32 rounded-md',
+          isDragging ? 'border-indigo-300/50' : '',
+        ])}
+        onDrop={handleDrop}
+        onDragOver={handleDragOver}
+        onDragLeave={handleDragLeave}
+        onDragEnd={handleDragOver}
+      >
+        {!file && (
+          <input
+            type="file"
+            onChange={handleFileInput}
+            className="absolute inset-0 opacity-0 size-full cursor-pointer z-50"
+          />
+        )}
+
+        {!file && (
+          <div className="center w-full h-full transition duration-200 ease-in-out opacity-50 hover:opacity-100">
+            <p className="font-medium">Drop or Select a File</p>
+          </div>
+        )}
+        {file && <FileInfo file={file} onRemoveFile={handleRemoveFile} /> }
       </div>
     </div>
   )
 }
 
-export default function FileUpload({
-  className,
-}: {
-  className: string
-}) {
+function FileInfo({ file, onRemoveFile }: { file: File, onRemoveFile: () => void }) {
   const { send } = useSocket()
-  const [file, setFile] = useState<File | null>(null)
-
-  const handleFileInput = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files.length > 0) {
-      setFile(e.target.files[0])
-    }
-  }
-
   const sendFile = () => {
-    console.log('Hello')
     if (file) {
-      console.log('Sending file:', file)
       const reader = new FileReader()
       reader.onload = () => {
         const base64 = reader.result?.toString().split(',')[1]
@@ -51,13 +90,32 @@ export default function FileUpload({
     }
   }
 
+  console.log(file)
   return (
-    <div className={cx(className)}>
-      <div className={cx('border border-dashed border-zinc-500 relative h-32 p-1 rounded-md')}>
-        <input type="file" onChange={handleFileInput} />
-        {file && <FileInfo file={file} /> }
+    <div className="flex mx-8">
+      <div className="flex border border-zinc-800">
+        <div className="ml-8 flex items-center justify-center">
+          <Icon icon="tabler:file" className="scale-[2]" />
+        </div>
+        <div className="w-60 flex flex-col justify-center py-3 px-8">
+          <p className="text-base font-medium">{file.name }</p>
+          <div className="between">
+            <p className="text-sm text-zinc-300">{ file.type }</p>
+            <p className="text-sm text-zinc-300">{ prettyBytes(file.size) }</p>
+          </div>
+        </div>
+        <button
+          onClick={sendFile}
+          className={cx([
+            'cursor-pointer',
+            'bg-zinc-800 px-5 py-2.5 text-sm font-medium',
+          ])}
+        >Analyze
+        </button>
       </div>
-      <button onClick={sendFile} className="bg-zinc-800 px-5 py-2.5 rounded-md text-sm font-medium">Analyze</button>
+      <button className="w-10 flex items-start justify-center mt-2 cursor-pointer" onClick={onRemoveFile}>
+        <Icon icon="ic:twotone-remove-circle-outline" className="text-rose-300 scale-[1.3]" />
+      </button>
     </div>
   )
 }
