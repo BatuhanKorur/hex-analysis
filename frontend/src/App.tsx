@@ -1,13 +1,13 @@
 import FileUpload from './components/FileUpload'
 import { useSocket } from './context/SocketContext'
 import { ColorAnalysisItem, FileVerificationResponse, HexDumpResponse, HashListItem } from '@hex-analysis/shared'
-import FileVerificationCard from './components/FileVerificationCard'
+import FileVerification from './cards/FileVerification'
 import { useEffect, useState } from 'react'
 import { ImageColors } from './cards/ImageColors'
 import { HexStrings } from './cards/HexStrings'
 import { HexDump } from './cards/HexDump'
 import { HashList } from './cards/HashList'
-import { SocketStatus } from './components/SocketStatus'
+import { SocketStatus } from './components'
 
 export default function App() {
   const [file, setFile] = useState<File | null>(null)
@@ -29,7 +29,7 @@ export default function App() {
         <FileUpload className="col-span-6" onFileUpload={setFile} />
       </div>
       <div className="grid grid-cols-12 my-10 gap-4">
-        { fileVerification && <FileVerificationCard className="col-span-6" results={fileVerification} />}
+        { fileVerification && <FileVerification className="col-span-12" results={fileVerification} />}
         { hashList && <HashList className="col-span-12" data={hashList} />}
         { hexDump && <HexDump className="col-span-8" data={hexDump} />}
         { hexStrings && <HexStrings className="col-span-4" data={hexStrings} />}

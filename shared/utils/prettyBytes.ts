@@ -59,6 +59,8 @@ const BIBIT_UNITS = [
 function toLocaleString(number: any, locale: any, options: any) {
   let result = number
   if (typeof locale === 'string' || Array.isArray(locale)) {
+
+
     result = number.toLocaleString(locale, options)
   }
   else if (locale === true || options !== undefined) {

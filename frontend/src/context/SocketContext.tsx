@@ -15,7 +15,11 @@ const WebSocketContext = createContext<SocketContextType>({
   isConnected: false,
   send: () => {},
   messages: new Map<string, unknown>(),
-})
+
+
+
+}
+)
 
 export const useSocket = () => useContext(WebSocketContext)
 

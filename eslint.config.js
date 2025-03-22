@@ -6,39 +6,20 @@ import pluginJs from '@eslint/js'
 import pluginReact from 'eslint-plugin-react'
 import pluginReactHooks from 'eslint-plugin-react-hooks'
 
-console.log(pluginReactHooks.configs['recommended-latest'].rules)
 export default [
   pluginJs.configs.recommended,
   ...tseslint.configs.recommended,
-  stylistic.configs.recommended,
   {
-    languageOptions: {
-      parser: tsparser,
-      globals: {
-        ...globals.browser,
-        ...globals.es2025,
-        ...globals.node,
-      },
-    },
-    rules: {
-      '@typescript-eslint/ban-ts-comment': 'off',
-    },
-  },
-  {
-    rules: {
-      '@stylistic/jsx-one-expression-per-line': 'off',
-    },
-  },
-  {
-    files: ['**/frontend/**/*.{js,jsx,ts,tsx}'],
     plugins: {
-      'react': pluginReact,
-      'react-hooks': pluginReactHooks,
+      '@stylistic': stylistic,
     },
     rules: {
-      ...pluginReact.configs.flat.recommended.rules,
-      ...pluginReactHooks.configs['recommended-latest'].rules,
-      'react/react-in-jsx-scope': 'off',
+      ...stylistic.configs.recommended.rules,
+      '@stylistic/array-bracket-newline': ['error', 'consistent'],
+      '@stylistic/arrow-parent': ['error', 'always'],
+      '@stylistic/curly-newline': ['error', 'consistent'],
+      '@stylistic/function-call-argument-newline': ["error", "consistent"],
+      '@stylistic/jsx-closing-bracket-location': [1, 'tag-aligned']
     },
   },
 ]
